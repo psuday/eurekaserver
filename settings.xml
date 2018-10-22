@@ -1,0 +1,4 @@
+<settings>
+  <docker.image.name>eurekaservice</docker.image.name>
+  <docker.image.tag>eurekaservice</docker.image.tag>
+</settings>

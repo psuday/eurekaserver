@@ -1,5 +1,5 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+	 xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
   <modelVersion>4.0.0</modelVersion>
   <groupId>com.uday.springcloud</groupId>
   <artifactId>eureka</artifactId>
@@ -12,7 +12,11 @@
     <artifactId>spring-boot-starter-parent</artifactId>
     <version>2.0.5.RELEASE</version>
   </parent>
+  <properties>
+    <docker.image.name>eurekaservice</docker.image.name>
+    <docker.image.tag>eurekaservice</docker.image.tag>
 
+  </properties>
   <dependencyManagement>
     <dependencies>
       <dependency>
@@ -29,19 +33,81 @@
 	<version>5.2.0</version>
 	<type>pom</type>
       </dependency>
-
     </dependencies>
   </dependencyManagement>
+  <build>
+    <plugins>
+      <plugin>
+	<groupId>com.spotify</groupId>
+	<artifactId>dockerfile-maven-plugin</artifactId>
+	<version>1.4.7</version>
+	<executions>
+	  <execution>
+	    <id>default</id>
+	    <goals>
+	      <goal>build</goal>
+	      <goal>push</goal>
+	    </goals>
+	  </execution>
+	</executions>
+	<configuration>
+	  <repository>spotify/foobar</repository>
+	  <tag>${project.version}</tag>
+	  <buildArgs>
+	    <JAR_FILE>${project.build.finalName}.jar</JAR_FILE>
+	  </buildArgs>
+	</configuration>
+      </plugin>
+      <plugin>
+        <artifactId>maven-shade-plugin</artifactId>
+        <version>2.3</version>
+        <executions>
+          <execution>
+            <phase>package</phase>
+            <goals>
+              <goal>shade</goal>
+            </goals>
+            <configuration>
+              <transformers>
+                <transformer implementation="org.apache.maven.plugins.shade.resource.AppendingTransformer">
+                  <resource>META-INF/spring.handlers</resource>
+                </transformer>
+                <transformer implementation="org.springframework.boot.maven.PropertiesMergingResourceTransformer">
+                  <resource>META-INF/spring.factories</resource>
+                </transformer>
+                <transformer implementation="org.apache.maven.plugins.shade.resource.AppendingTransformer">
+                  <resource>META-INF/spring.schemas</resource>
+                </transformer>
+                <transformer implementation="org.apache.maven.plugins.shade.resource.ServicesResourceTransformer" />
+                <transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
+                  <mainClass>com.uday.appointmentservice.Application</mainClass>
+                </transformer>
+              </transformers>
+              <keepDependenciesWithProvidedScope>true</keepDependenciesWithProvidedScope>
+              <createDependencyReducedPom>true</createDependencyReducedPom>
+              <filters>
+                <filter>
+                  <artifact>*:*</artifact>
+                  <excludes>
+                    <exclude>META-INF/*.SF</exclude>
+                    <exclude>META-INF/*.DSA</exclude>
+                    <exclude>META-INF/*.RSA</exclude>
+                  </excludes>
+                </filter>
+              </filters>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+    </plugins>
+  </build>
 
 
   <dependencies>
-<dependency>
-<groupId>org.springframework.cloud</groupId>
-<artifactId>spring-cloud-starter-netflix-eureka-server</artifactId>
-</dependency>
-
-
-
+    <dependency>
+      <groupId>org.springframework.cloud</groupId>
+      <artifactId>spring-cloud-starter-netflix-eureka-server</artifactId>
+    </dependency>
     <dependency>
       <groupId>junit</groupId>
       <artifactId>junit</artifactId>
